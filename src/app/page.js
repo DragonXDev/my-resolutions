@@ -21,6 +21,7 @@ export default function Home() {
   const [userDisplayName, setUserDisplayName] = useState("");
   const [editingResolution, setEditingResolution] = useState(null);
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +42,14 @@ export default function Home() {
     fetchData();
   }, []);
 
+  const onAddResolutionClick = () => {
+    if (isLoggedIn) {
+      setModalOpen(true);
+    } else {
+      setShowLoginPrompt(true);
+    }
+  };
+
   const addNewResolution = async (resolutionText) => {
     const {
       data: { user },
@@ -52,23 +61,22 @@ export default function Home() {
   };
 
   const handleEditResolution = (resolutionToEdit) => {
-    setEditingResolution(resolutionToEdit); // Set the resolution to be edited
-    setModalOpen(true); // Open the modal
+    setEditingResolution(resolutionToEdit);
+    setModalOpen(true);
   };
+
   return (
     <div
       className={`flex flex-wrap justify-center gap-y-0.5 gap-x-4 items-start h-screen bg-white ${
         isLoggedIn ? "loggedIn" : "loggedOut"
       }`}
     >
-      {isLoggedIn ? (
-        <div className="col-span-full w-full p-4 flex justify-end">
+      <div className="col-span-full w-full p-4 flex justify-end ">
+        {isLoggedIn ? (
           <div className="bg-zinc-700 shadow-2xl rounded-2xl p-3 mr-7 mt-4">
             <DisplayName />
           </div>
-        </div>
-      ) : (
-        <div className="col-span-full w-full p-4 flex justify-end">
+        ) : (
           <a
             className="bg-zinc-700 shadow-2xl rounded-2xl p-3 mr-7 mt-4"
             onClick={() => console.log("HERE")}
@@ -76,8 +84,9 @@ export default function Home() {
           >
             Login
           </a>
-        </div>
-      )}
+        )}
+      </div>
+
       {resolutions.map((resolution) => (
         <div
           key={resolution.id}
@@ -98,7 +107,7 @@ export default function Home() {
         </div>
       ))}
       <div className="col-span-full">
-        <AddResolutionButton onClick={() => setModalOpen(true)} />
+        <AddResolutionButton onClick={onAddResolutionClick} />
       </div>
       <Modal
         isOpen={isModalOpen}
@@ -110,6 +119,20 @@ export default function Home() {
         editingResolution={editingResolution}
         updateResolution={(res) => updateResolution(res, setResolutions)}
       />
+      {showLoginPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-10 rounded-lg text-black shadow-xl">
+            <h2 className="text-lg font-bold mb-4">Login Required</h2>
+            <p>Please log in to add a resolution.</p>
+            <button
+              onClick={() => setShowLoginPrompt(false)}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       {showWelcomePopup && (
         <WelcomePopup setShowWelcomePopup={setShowWelcomePopup} />
       )}
