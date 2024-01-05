@@ -33,14 +33,72 @@ export default function Home() {
         setUserDisplayName(user.user_metadata.full_name);
       }
       let { data, error } = await supabase.from("resolutions").select("*");
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setResolutions(data);
-      }
+      if (error) console.error("Error fetching data:", error);
+      else setResolutions(data);
+
+      const channel = supabase
+        .channel("channel1")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "resolutions" },
+          (payload) => {
+            console.log("Insert received!", payload);
+            setResolutions((prev) => [...prev, payload.new]);
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "resolutions" },
+          (payload) => {
+            console.log("Update received!", payload);
+            setResolutions((prev) =>
+              prev.map((item) =>
+                item.id === payload.new.id ? payload.new : item
+              )
+            );
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "resolutions" },
+          (payload) => {
+            console.log("Delete received!", payload);
+            setResolutions((prev) =>
+              prev.filter((item) => item.id !== payload.old.id)
+            );
+          }
+        )
+        .subscribe();
+
+      return () => supabase.removeChannel(channel);
     };
+
     fetchData();
   }, []);
+
+  const updateResolutions = (payload) => {
+    switch (payload.eventType) {
+      case "INSERT":
+        setResolutions((prevResolutions) => [...prevResolutions, payload.new]);
+        break;
+      case "UPDATE":
+        setResolutions((prevResolutions) =>
+          prevResolutions.map((resolution) =>
+            resolution.id === payload.new.id ? payload.new : resolution
+          )
+        );
+        break;
+      case "DELETE":
+        setResolutions((prevResolutions) =>
+          prevResolutions.filter(
+            (resolution) => resolution.id !== payload.old.id
+          )
+        );
+        break;
+      default:
+        break;
+    }
+  };
 
   const onAddResolutionClick = () => {
     if (isLoggedIn) {
