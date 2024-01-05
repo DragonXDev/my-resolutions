@@ -102,8 +102,8 @@ export default function Home() {
               />
             </div>
           )}
-          <h3 className="text-lg font-bold">{resolution.name}</h3>
-          <p>{resolution.message}</p>
+          <h3 className="text-lg font-bold text-white">{resolution.name}</h3>
+          <p className="text-white">{resolution.message}</p>
         </div>
       ))}
       <div className="col-span-full">

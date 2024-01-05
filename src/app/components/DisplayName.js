@@ -36,7 +36,7 @@ export default function DisplayName() {
 
   return (
     <div ref={dropdownRef} className="relative">
-      <h1 onClick={() => setShowDropdown(!showDropdown)}>
+      <h1 onClick={() => setShowDropdown(!showDropdown)} className="text-white">
         Welcome {displayName}
       </h1>
       {showDropdown && (
