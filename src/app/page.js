@@ -37,25 +37,21 @@ export default function Home() {
       else setResolutions(data);
 
       const channel = supabase
-        .channel("channel1")
+        .channel("public:resolutions")
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "resolutions" },
           (payload) => {
             console.log("Insert received!", payload);
-            setResolutions((prev) => [...prev, payload.new]);
-          }
-        )
-        .on(
-          "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "resolutions" },
-          (payload) => {
-            console.log("Update received!", payload);
-            setResolutions((prev) =>
-              prev.map((item) =>
-                item.id === payload.new.id ? payload.new : item
-              )
-            );
+            setResolutions((prev) => {
+              // Check if the resolution already exists in the state
+              const exists = prev.some((res) => res.id === payload.new.id);
+              if (!exists) {
+                return [...prev, payload.new];
+              } else {
+                return prev;
+              }
+            });
           }
         )
         .on(
