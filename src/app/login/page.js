@@ -30,7 +30,7 @@ export default function Login() {
     const { user, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
     });
-    router.push("/");
+    // router.push("/");
     if (error) {
       console.error("Error logging in:", error);
       setLoading(false);
